@@ -1,4 +1,4 @@
-namespace SnippetRunner.Applications
+namespace SnippetRunner.Apps
 {
     public class MiniAdventureGame : ISnippet
     {

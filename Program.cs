@@ -7,53 +7,38 @@ namespace SnippetRunner
     {
         static void Main(string[] args)
         {
-            var snippets = DiscoverSnippets();
+            var (fullPathMap, shortNameMap) = DiscoverSnippets();
 
-            if (snippets.Count == 0)
-            {
-                Console.WriteLine("No snippets found!");
-            }
             if (args.Length > 0)
             {
-                string choice = args[0].ToLower();
-                if (snippets.TryGetValue(choice, out var snippet))
-                {
-                    Console.WriteLine($"Running '{snippet.Name}' with args...\n");
-                    snippet.Run(args.Skip(1).ToArray());
-                }
-                else
-                {
-                    Console.WriteLine("Invalid snippet name.");
-                }
+                RunSnippet(args[0].ToLower(), args.Skip(1).ToArray(), fullPathMap, shortNameMap);
                 return;
             }
 
-            Console.WriteLine("=== Snippet Runner ===");
-            PrintTree(snippets.Keys);
+            Console.WriteLine("=== Snippet Runner ===\n");
+            PrintTree(fullPathMap.Keys);
 
             Console.Write("\nEnter snippet name to run: ");
-            string choiceInteractive = Console.ReadLine()?.Trim().ToLower() ?? "";
+            string input = Console.ReadLine()?.Trim().ToLower() ?? "";
 
-            if (snippets.TryGetValue(choiceInteractive, out var chosenSnippet))
-            {
-                Console.WriteLine($"\nRunning '{chosenSnippet}' ...\n");
-                chosenSnippet.Run(Array.Empty<string>());
-            }
-            else
-            {
-                Console.WriteLine("Invalid choice, Exiting...");
-            }
+            RunSnippet(input, Array.Empty<string>(), fullPathMap, shortNameMap);
         }
-         private static Dictionary<string, ISnippet> DiscoverSnippets()
+        private static (Dictionary<string, ISnippet> fullPathMap,
+                Dictionary<string, List<string>> shortNameMap) DiscoverSnippets()
         {
-            return Assembly.GetExecutingAssembly()
+            var fullPathMap = Assembly.GetExecutingAssembly()
                 .GetTypes()
                 .Where(t => typeof(ISnippet).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
                 .Select(t =>
                 {
                     var instance = (ISnippet)Activator.CreateInstance(t)!;
 
-                    var ns = t.Namespace?.Replace("SnippetRunner.Snippets.", "").ToLower() ?? "";
+                    var ns = t.Namespace ?? "";
+                    if (ns.StartsWith("SnippetRunner."))
+                        ns = ns.Substring("SnippetRunner.".Length);
+
+                    ns = ns.ToLower();
+
                     string key = string.IsNullOrEmpty(ns)
                         ? instance.Name.ToLower()
                         : $"{ns.Replace('.', '/')}/{instance.Name.ToLower()}";
@@ -61,7 +46,19 @@ namespace SnippetRunner
                     return (key, instance);
                 })
                 .ToDictionary(x => x.key, x => x.instance);
+
+            var shortNameMap = new Dictionary<string, List<string>>();
+            foreach (var kvp in fullPathMap)
+            {
+                string shortName = kvp.Value.Name.ToLower();
+                if (!shortNameMap.ContainsKey(shortName))
+                    shortNameMap[shortName] = new List<string>();
+                shortNameMap[shortName].Add(kvp.Key);
+            }
+
+            return (fullPathMap, shortNameMap);
         }
+
 
         private static void PrintTree(IEnumerable<string> snippetKeys)
         {
@@ -85,6 +82,39 @@ namespace SnippetRunner
 
             // Print recursively
             PrintNode(root, "");
+        }
+        private static void RunSnippet(string keyOrName, string[] args,
+    Dictionary<string, ISnippet> fullPathMap,
+    Dictionary<string, List<string>> shortNameMap)
+        {
+            // Try full path first
+            if (fullPathMap.TryGetValue(keyOrName, out var snippet))
+            {
+                Console.WriteLine($"\n▶ Running '{keyOrName}'...\n");
+                snippet.Run(args);
+                return;
+            }
+
+            // Try short name
+            if (shortNameMap.TryGetValue(keyOrName, out var matches))
+            {
+                if (matches.Count == 1)
+                {
+                    string fullKey = matches[0];
+                    Console.WriteLine($"\n▶ Running '{fullKey}'...\n");
+                    fullPathMap[fullKey].Run(args);
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Ambiguous name '{keyOrName}'. Matches:");
+                    foreach (var match in matches)
+                        Console.WriteLine($"   - {match}");
+                }
+                return;
+            }
+
+            Console.WriteLine($"❌ Unknown snippet '{keyOrName}'\n");
+            PrintTree(fullPathMap.Keys);
         }
 
         private static void PrintNode(TreeNode node, string indent, bool isLast = true)
