@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SnippetRunner
 {
@@ -6,11 +7,7 @@ namespace SnippetRunner
     {
         static void Main(string[] args)
         {
-            var snippets = Assembly.GetExecutingAssembly()
-            .GetTypes()
-            .Where(t => typeof(ISnippet).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
-            .Select(t => (ISnippet)Activator.CreateInstance(t)!)
-            .ToDictionary(s => s.Name.ToLower(), s => s);
+            var snippets = DiscoverSnippets();
 
             if (snippets.Count == 0)
             {
@@ -32,7 +29,7 @@ namespace SnippetRunner
             }
 
             Console.WriteLine("=== Snippet Runner ===");
-            PrintAvailable(snippets);
+            PrintTree(snippets.Keys);
 
             Console.Write("\nEnter snippet name to run: ");
             string choiceInteractive = Console.ReadLine()?.Trim().ToLower() ?? "";
@@ -47,14 +44,43 @@ namespace SnippetRunner
                 Console.WriteLine("Invalid choice, Exiting...");
             }
         }
-        private static void PrintAvailable(Dictionary<string, ISnippet> snippets)
+        private static void PrintTree(IEnumerable<string> snippetKeys)
         {
             Console.WriteLine("Available Snippets:");
 
-            foreach (var s in snippets.Values.OrderBy(s => s.Name))
+            var grouped = snippetKeys
+                .OrderBy(k => k)
+                .GroupBy(k => k.Contains("/") ? k[..k.LastIndexOf("/")] : "");
+
+            foreach (var group in grouped)
             {
-                Console.WriteLine($" - {s.Name} {(string.IsNullOrEmpty(s.Description)? "": ("→ " + s.Description))}");
+                if (!string.IsNullOrEmpty(group.Key))
+                    Console.WriteLine($"{group.Key}");
+                foreach (var snippet in group.OrderBy(k => k))
+                {
+                    string nameOnly = snippet.Contains('/') ? snippet[(snippet.LastIndexOf('/') + 1)..] : snippet;
+                    Console.WriteLine($" - {snippet} ({nameOnly})");
+                }
+                Console.WriteLine();
             }
+
+
+        }
+        private static Dictionary<string, ISnippet> DiscoverSnippets()
+        {
+            return Assembly.GetExecutingAssembly()
+                .GetTypes()
+                .Where(t => typeof(ISnippet).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+                .Select(t =>
+                {
+                    var instance = (ISnippet)Activator.CreateInstance(t)!;
+                    var ns = t.Namespace?.Replace("SnippetRunner.Snippets", "").ToLower() ?? "";
+                    string key = string.IsNullOrEmpty(ns)
+                        ? instance.Name.ToLower()
+                        : $"{ns.Replace('.', '/')}/{instance.Name.ToLower()}";
+                    return (key, instance);
+                })
+                .ToDictionary(x => x.key, x => x.instance);
         }
     }
 }

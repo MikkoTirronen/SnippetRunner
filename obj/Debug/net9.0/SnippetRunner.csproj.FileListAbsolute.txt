@@ -12,3 +12,4 @@ c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\refint\SnippetRu
 c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.pdb
 C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.genruntimeconfig.cache
 C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\ref\SnippetRunner.dll
+C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.sourcelink.json
