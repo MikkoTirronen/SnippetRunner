@@ -1,0 +1,14 @@
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\bin\Debug\net9.0\SnippetRunner.exe
+C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\bin\Debug\net9.0\SnippetRunner.deps.json
+C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\bin\Debug\net9.0\SnippetRunner.runtimeconfig.json
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\bin\Debug\net9.0\SnippetRunner.dll
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\bin\Debug\net9.0\SnippetRunner.pdb
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.AssemblyInfoInputs.cache
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.AssemblyInfo.cs
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.csproj.CoreCompileInputs.cache
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.dll
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\refint\SnippetRunner.dll
+c:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.pdb
+C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\SnippetRunner.genruntimeconfig.cache
+C:\Users\MIKKSTER\Desktop\csharp\SnippetRunner\obj\Debug\net9.0\ref\SnippetRunner.dll
