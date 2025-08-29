@@ -9,20 +9,22 @@ namespace SnippetRunner
         {
             var (fullPathMap, shortNameMap) = DiscoverSnippets();
 
+
             if (args.Length > 0)
             {
                 RunSnippet(args[0].ToLower(), args.Skip(1).ToArray(), fullPathMap, shortNameMap);
                 return;
             }
-
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
             Console.WriteLine("=== Snippet Runner ===\n");
-            PrintTree(fullPathMap.Keys);
+            PrintTree(fullPathMap);
 
             Console.Write("\nEnter snippet name to run: ");
             string input = Console.ReadLine()?.Trim().ToLower() ?? "";
 
             RunSnippet(input, Array.Empty<string>(), fullPathMap, shortNameMap);
         }
+
         private static (Dictionary<string, ISnippet> fullPathMap,
                 Dictionary<string, List<string>> shortNameMap) DiscoverSnippets()
         {
@@ -60,32 +62,10 @@ namespace SnippetRunner
         }
 
 
-        private static void PrintTree(IEnumerable<string> snippetKeys)
-        {
-            var sorted = snippetKeys.OrderBy(k => k).ToList();
 
-            // Build tree structure
-            var root = new TreeNode("");
-
-            foreach (var key in sorted)
-            {
-                var parts = key.Split('/');
-                var current = root;
-                foreach (var part in parts)
-                {
-                    if (!current.Children.ContainsKey(part))
-                        current.Children[part] = new TreeNode(part);
-                    current = current.Children[part];
-                }
-                current.IsLeaf = true;
-            }
-
-            // Print recursively
-            PrintNode(root, "");
-        }
         private static void RunSnippet(string keyOrName, string[] args,
-    Dictionary<string, ISnippet> fullPathMap,
-    Dictionary<string, List<string>> shortNameMap)
+            Dictionary<string, ISnippet> fullPathMap,
+            Dictionary<string, List<string>> shortNameMap)
         {
             // Try full path first
             if (fullPathMap.TryGetValue(keyOrName, out var snippet))
@@ -114,39 +94,70 @@ namespace SnippetRunner
             }
 
             Console.WriteLine($"❌ Unknown snippet '{keyOrName}'\n");
-            PrintTree(fullPathMap.Keys);
+            PrintTree(fullPathMap);
         }
 
-        private static void PrintNode(TreeNode node, string indent, bool isLast = true)
+        private static void PrintTree(Dictionary<string, ISnippet> snippets)
+        {
+            var root = new TreeNode("");
+
+            foreach (var kvp in snippets)
+            {
+                var parts = kvp.Key.Split('/');
+                var current = root;
+                foreach (var part in parts)
+                {
+                    if (!current.Children.ContainsKey(part))
+                        current.Children[part] = new TreeNode(part);
+                    current = current.Children[part];
+                }
+                current.Snippet = kvp.Value; // leaf
+            }
+
+            PrintNode(root, "", isLast: true);
+        }
+
+        private static void PrintNode(TreeNode node, string indent, bool isLast)
         {
             if (!string.IsNullOrEmpty(node.Name))
             {
-                Console.Write(indent);
-                Console.Write(isLast ? "└── " : "├── ");
-                Console.WriteLine(node.Name);
-                indent += isLast ? "    " : "│   ";
+                string branch = isLast ? "└── " : "├── ";
+                string linePrefix = indent + branch + node.Name;
+                string contPrefix = indent + (isLast ? "    " : "│   ");
+
+                if (node.Snippet != null && !string.IsNullOrWhiteSpace(node.Snippet.Description))
+                {
+                    string delim = "  -  ";
+                    Console.WriteLine(linePrefix + delim + node.Snippet.Description);
+                }
+                else
+                {
+                    // just the name
+                    Console.WriteLine(linePrefix);
+                }
+
+                // indent for children
+                indent = contPrefix;
             }
 
-            var childCount = node.Children.Count;
-            int i = 0;
-            foreach (var child in node.Children.Values.OrderBy(c => c.Name))
+            var children = node.Children.Values.OrderBy(c => c.Name).ToList();
+            for (int i = 0; i < children.Count; i++)
             {
-                PrintNode(child, indent, ++i == childCount);
+                bool childIsLast = (i == children.Count - 1);
+                PrintNode(children[i], indent, childIsLast);
             }
         }
 
-        private class TreeNode
+
+
+
+        private sealed class TreeNode
         {
             public string Name { get; }
-            public Dictionary<string, TreeNode> Children { get; }
-            public bool IsLeaf { get; set; }
-
-            public TreeNode(string name)
-            {
-                Name = name;
-                Children = new Dictionary<string, TreeNode>();
-                IsLeaf = false;
-            }
+            public Dictionary<string, TreeNode> Children { get; } = new();
+            public ISnippet? Snippet { get; set; }
+            public TreeNode(string name) => Name = name;
         }
+
     }
 }
