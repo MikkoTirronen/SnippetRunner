@@ -1,4 +1,4 @@
-namespace SnippetRunner
+namespace SnippetRunner.Snippets.FirstWeek
 {
     class HelloWorldSnippet : ISnippet
     {

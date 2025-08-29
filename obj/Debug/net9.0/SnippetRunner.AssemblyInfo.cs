@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SnippetRunner")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0fb7f50d8eaac88fe65a6e5df06a18e7eab4143e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cc341fdceda64663e1448af96e581a1da2b95095")]
 [assembly: System.Reflection.AssemblyProductAttribute("SnippetRunner")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SnippetRunner")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

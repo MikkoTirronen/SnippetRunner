@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
+
 
 namespace SnippetRunner
 {
@@ -44,29 +44,7 @@ namespace SnippetRunner
                 Console.WriteLine("Invalid choice, Exiting...");
             }
         }
-        private static void PrintTree(IEnumerable<string> snippetKeys)
-        {
-            Console.WriteLine("Available Snippets:");
-
-            var grouped = snippetKeys
-                .OrderBy(k => k)
-                .GroupBy(k => k.Contains("/") ? k[..k.LastIndexOf("/")] : "");
-
-            foreach (var group in grouped)
-            {
-                if (!string.IsNullOrEmpty(group.Key))
-                    Console.WriteLine($"{group.Key}");
-                foreach (var snippet in group.OrderBy(k => k))
-                {
-                    string nameOnly = snippet.Contains('/') ? snippet[(snippet.LastIndexOf('/') + 1)..] : snippet;
-                    Console.WriteLine($" - {snippet} ({nameOnly})");
-                }
-                Console.WriteLine();
-            }
-
-
-        }
-        private static Dictionary<string, ISnippet> DiscoverSnippets()
+         private static Dictionary<string, ISnippet> DiscoverSnippets()
         {
             return Assembly.GetExecutingAssembly()
                 .GetTypes()
@@ -74,13 +52,71 @@ namespace SnippetRunner
                 .Select(t =>
                 {
                     var instance = (ISnippet)Activator.CreateInstance(t)!;
-                    var ns = t.Namespace?.Replace("SnippetRunner.Snippets", "").ToLower() ?? "";
+
+                    var ns = t.Namespace?.Replace("SnippetRunner.Snippets.", "").ToLower() ?? "";
                     string key = string.IsNullOrEmpty(ns)
                         ? instance.Name.ToLower()
                         : $"{ns.Replace('.', '/')}/{instance.Name.ToLower()}";
+
                     return (key, instance);
                 })
                 .ToDictionary(x => x.key, x => x.instance);
+        }
+
+        private static void PrintTree(IEnumerable<string> snippetKeys)
+        {
+            var sorted = snippetKeys.OrderBy(k => k).ToList();
+
+            // Build tree structure
+            var root = new TreeNode("");
+
+            foreach (var key in sorted)
+            {
+                var parts = key.Split('/');
+                var current = root;
+                foreach (var part in parts)
+                {
+                    if (!current.Children.ContainsKey(part))
+                        current.Children[part] = new TreeNode(part);
+                    current = current.Children[part];
+                }
+                current.IsLeaf = true;
+            }
+
+            // Print recursively
+            PrintNode(root, "");
+        }
+
+        private static void PrintNode(TreeNode node, string indent, bool isLast = true)
+        {
+            if (!string.IsNullOrEmpty(node.Name))
+            {
+                Console.Write(indent);
+                Console.Write(isLast ? "└── " : "├── ");
+                Console.WriteLine(node.Name);
+                indent += isLast ? "    " : "│   ";
+            }
+
+            var childCount = node.Children.Count;
+            int i = 0;
+            foreach (var child in node.Children.Values.OrderBy(c => c.Name))
+            {
+                PrintNode(child, indent, ++i == childCount);
+            }
+        }
+
+        private class TreeNode
+        {
+            public string Name { get; }
+            public Dictionary<string, TreeNode> Children { get; }
+            public bool IsLeaf { get; set; }
+
+            public TreeNode(string name)
+            {
+                Name = name;
+                Children = new Dictionary<string, TreeNode>();
+                IsLeaf = false;
+            }
         }
     }
 }
