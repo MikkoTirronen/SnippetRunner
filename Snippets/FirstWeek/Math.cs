@@ -7,6 +7,7 @@ namespace SnippetRunner.Snippets.FirstWeek
 
         public void Run(string[] args)
         {
+            
             if (args.Length < 2)
             {
                 Console.WriteLine("Usage: math <a> <b>");

@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <!-- Default to cross-platform -->
+    <TargetFramework>net9.0</TargetFramework>
+
+    <!-- On Windows, override to use Windows target -->
+    <TargetFramework Condition="'$(OS)' == 'Windows_NT'">net9.0-windows</TargetFramework>
+  </PropertyGroup>
+</Project>
