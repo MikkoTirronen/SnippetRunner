@@ -26,6 +26,10 @@ namespace SnippetRunner
             Console.WriteLine("\n==== Ending Program ====\n");
         }
 
+
+        //Scans project for snippets, creates a key-value pair for fullPathMap and for quick launch shortname path
+        //Snippets with Errors end up in a hashset for broken snippets\
+        //platformNotes is created for 
         private static (
             Dictionary<string, ISnippet> fullPathMap,
             Dictionary<string, List<string>> shortNameMap,
@@ -132,6 +136,9 @@ namespace SnippetRunner
             PrintTree(fullPathMap, brokenSnippets, platformNotes);
         }
 
+
+        //Creates Tree node "Applications"
+        //
         private static void PrintTree(Dictionary<string, ISnippet> fullPathMap,
             HashSet<string> brokenSnippets,
             Dictionary<string, string> platformNotes)
@@ -155,7 +162,7 @@ namespace SnippetRunner
                 PrintNode(brokenRoot, "", true);
             }
         }
-
+        //adds path to 
         private static void AddPath(TreeNode root, string path, ISnippet? snippet, bool isBroken, string? platform)
         {
             var current = root;
@@ -170,6 +177,7 @@ namespace SnippetRunner
             current.PlatformRestriction ??= platform;
         }
 
+        //creates indentation, prints tree graphic, error message, shortname map for single node.
         private static void PrintNode(TreeNode node, string indent, bool isLast)
         {
             if (!string.IsNullOrEmpty(node.Name))
